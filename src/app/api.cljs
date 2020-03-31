@@ -54,17 +54,16 @@
      
     (fn [result]
       (when-not (-> result .-data .-Error)
-        (let [blockchainInfo (-> result .-data .-Result)
-              info (js->clj blockchainInfo :keywordize-keys true)
+        (let [blockchainInfo (get-in (js->clj result :keywordize-keys true) [:data :Result])
+              info blockchainInfo 
               ]
-          (js/console.log result)
                (when blockchainInfo 
             (swap! storage assoc :blockchain
                    
             (assoc
             info
-            :TotalTxs (js->clj (-> blockchainInfo .-BestBlocks (aget "-1") .-TotalTxs))
-            :Beacon (js->clj (aget (.-BestBlocks blockchainInfo) "-1"))
+            :TotalTxs (get-in blockchainInfo [:BestBlocks :-1 :TotalTxs])
+            :Beacon (get-in blockchainInfo [:BestBlocks :-1])
             )
                    )
             ))
