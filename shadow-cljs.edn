@@ -6,7 +6,7 @@
         :compiler-options
         {;:source-map true
          ;:optimizations :none
-         :fn-invoke-direct true
+         ;:fn-invoke-direct true
          }
         }
   :cards {:asset-path "/js"

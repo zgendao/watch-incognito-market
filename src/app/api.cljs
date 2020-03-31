@@ -87,9 +87,9 @@
                                  (deep-merge
                                  (apply merge
                                  (mapv
-                                   (fn [[shard nodes]]
+                                   (fn test1 [[shard nodes]]
                                      (into (hash-map) (mapv 
-                                       (fn [node]
+                                       (fn test3 [node]
                                          [(:IncPubKey node) {:pending? true :shard shard}])
                                        nodes
                                        )))
@@ -97,9 +97,9 @@
                                    ))
                                  (apply merge
                                  (mapv
-                                   (fn [[shard nodes]]
+                                   (fn test2 [[shard nodes]]
                                      (into (hash-map) (mapv 
-                                       (fn [node]
+                                       (fn test4 [node]
                                          [(:IncPubKey node) {:committee? true :shard shard}])
                                        nodes
                                        )))
@@ -107,7 +107,7 @@
                                    ))
                                  (into (hash-map)
                                  (mapv
-                                   (fn [node]
+                                   (fn test5 [node]
                                      [(:IncPubKey node) {:waiting? true}])
                                    (:CandidateShardWaitingForNextRandom info)
                                    ))
