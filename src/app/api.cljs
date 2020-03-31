@@ -57,7 +57,7 @@
         (let [blockchainInfo (-> result .-data .-Result)
               info (js->clj blockchainInfo :keywordize-keys true)
               ]
-                
+               (when blockchainInfo 
             (swap! storage assoc :blockchain
                    
             (assoc
@@ -66,7 +66,7 @@
             :Beacon (js->clj (aget (.-BestBlocks blockchainInfo) "-1"))
             )
                    )
-            )
+            ))
               ))))
 
 (defn validatorInfo
@@ -81,15 +81,16 @@
         (let [blockchainInfo (-> result .-data .-Result)
               info (js->clj blockchainInfo :keywordize-keys true)
               ]
+          (when blockchainInfo
             (swap! storage assoc
                    :validator info
                    :validators (dissoc
                                  (deep-merge
                                  (apply merge
                                  (mapv
-                                   (fn test1 [[shard nodes]]
+                                   (fn [[shard nodes]]
                                      (into (hash-map) (mapv 
-                                       (fn test3 [node]
+                                       (fn [node]
                                          [(:IncPubKey node) {:pending? true :shard shard}])
                                        nodes
                                        )))
@@ -97,9 +98,9 @@
                                    ))
                                  (apply merge
                                  (mapv
-                                   (fn test2 [[shard nodes]]
+                                   (fn [[shard nodes]]
                                      (into (hash-map) (mapv 
-                                       (fn test4 [node]
+                                       (fn [node]
                                          [(:IncPubKey node) {:committee? true :shard shard}])
                                        nodes
                                        )))
@@ -107,14 +108,14 @@
                                    ))
                                  (into (hash-map)
                                  (mapv
-                                   (fn test5 [node]
+                                   (fn [node]
                                      [(:IncPubKey node) {:waiting? true}])
                                    (:CandidateShardWaitingForNextRandom info)
                                    ))
                                  )
                                  nil)
                    )
-            )
+            ))
               ))))
 
 (defn beaconbestInfo
