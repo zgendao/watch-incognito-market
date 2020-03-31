@@ -57,6 +57,7 @@
         (let [blockchainInfo (-> result .-data .-Result)
               info (js->clj blockchainInfo :keywordize-keys true)
               ]
+          (js/console.log result)
                (when blockchainInfo 
             (swap! storage assoc :blockchain
                    
@@ -81,6 +82,7 @@
         (let [blockchainInfo (-> result .-data .-Result)
               info (js->clj blockchainInfo :keywordize-keys true)
               ]
+          (js/console.log result)
           (when blockchainInfo
             (swap! storage assoc
                    :validator info
