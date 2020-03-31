@@ -267,9 +267,13 @@ _
   ;[:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon "RemainingBlockEpoch"])]
   [:h6 "(You don't need to refresh the page.)"]
   [:br]]
-  ;[:div.container
-  ; (str (map (fn [[k c]]
-  ;             [(name k) (count c)]) @storage))]
+  [:div.container
+   (str (map (fn [[k c]]
+               [(name k) (count c)]) @storage))]
+  
+  [:div.container
+   (str (map (fn [[k c]]
+               [(name k) (when (or (map? c) (vector? c)) (count c))]) (:validator @storage)))]
   
   [:div.container
    [:div.input-field
@@ -286,14 +290,14 @@ _
                       (materialize/toast (clj->js {:html "Wait a sec.."})))
                     ))}
     "Watch my node"]
-   (if (not (empty? (:nodes @memory)))
+   (if (when (:nodes @memory) (not (empty? (:nodes @memory))))
      [:h4 "My nodes"]
      [:h4 "Validators"])
           [:ul.collection
            (keep
             (fn [[public-id info]]
               (when
-                (if (not (empty? (:nodes @memory)))
+                (if (when (:nodes @memory) (not (empty? (:nodes @memory))))
                   ((set (keys (:nodes @memory))) public-id)
                   true)
                 [:li.collection-item
@@ -314,7 +318,7 @@ _
             (get-in @storage [:validators]))]
    
           
-   (when (not (empty? (:nodes @memory)))
+   (when (when (:nodes @memory) (not (empty? (:nodes @memory))))
      [:h6 "This list is saved into your browser."]
      )
           ]
