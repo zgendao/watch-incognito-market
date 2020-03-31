@@ -81,7 +81,16 @@
       (when-not (-> result .-data .-Error)
         (let [blockchainInfo (get-in (js->clj result :keywordize-keys true) [:data :Result])
               info blockchainInfo 
+              waiting-list
+
+                                 (into (hash-map)
+                                 (mapv
+                                   (fn [node]
+                                     [(:IncPubKey node) {:waiting? true}])
+                                   (:CandidateShardWaitingForNextRandom info)
+                                   ))
               ]
+          (js/console.log (str waiting-list))
           (when blockchainInfo
             (swap! storage assoc
                    :validator info
@@ -107,13 +116,7 @@
                                        )))
                                    (:ShardCommittee info)
                                    ))
-                                 (into (hash-map)
-                                 (mapv
-                                   (fn [node]
-                                     [(:IncPubKey node) {:waiting? true}])
-                                   (:CandidateShardWaitingForNextRandom info)
-                                   ))
-                                 )
+                                 waiting-list)
                                  nil)
                    )
             ))
