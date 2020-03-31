@@ -5,7 +5,7 @@
         :target :browser
         :compiler-options
         {;:source-map true
-         :optimizations :whitespace
+         :optimizations :none
          }
         }
   :cards {:asset-path "/js"
