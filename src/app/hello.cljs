@@ -266,13 +266,13 @@ _
   ;[:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon "RemainingBlockEpoch"])]
   [:h6 "(You don't need to refresh the page.)"]
   [:br]]
-  [:div.container
-   (str (map (fn [[k c]]
-               [(name k) (count c)]) @storage))]
+ ; [:div.container
+ ;  (str (map (fn [[k c]]
+ ;              [(name k) (count c)]) @storage))]
   
-  [:div.container
-   (str (map (fn [[k c]]
-               [(name k) (when (or (map? c) (vector? c)) (count c))]) (:validator @storage)))]
+ ; [:div.container
+ ;  (str (map (fn [[k c]]
+ ;              [(name k) (when (or (map? c) (vector? c)) (count c))]) (:validator @storage)))]
   
   [:div.container
    [:div.input-field
