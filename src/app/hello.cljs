@@ -252,8 +252,7 @@ _
   )
 
 
-(defn hello []
-  [:<>
+(defn validators [memory storage]
 [:div
   [:nav {:style {:text-align "center"}}
    [:a "Live Incognito Market Data"]]
@@ -337,7 +336,11 @@ _
   ;   (:PDEShares (:dex @storage)))
   ;  ]]
   ]
+  )
 
+(defn hello []
+  [:<>
+[validators memory storage]
 ;   [statistics]
 ])
 
