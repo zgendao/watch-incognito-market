@@ -67,7 +67,7 @@
             )
                    )
             )
-               (js/console.log info)
+               (js/console.log (str info))
                )
               ))))
 
