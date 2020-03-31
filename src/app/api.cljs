@@ -66,7 +66,9 @@
             :Beacon (get-in blockchainInfo [:BestBlocks :-1])
             )
                    )
-            ))
+            )
+               (js/console.log info)
+               )
               ))))
 
 (defn validatorInfo
