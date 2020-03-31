@@ -261,7 +261,7 @@ _
    [:h6 "This site will be an advanced market analyzer for Incognito, but for now only two features are available: You could follow the detailed status of your nodes and you have a live counter about how many nodes are running."]
   ;[:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
   [:h5 "Reward Receiver Nodes: " (let [c (count (:RewardReceiver (:validator @storage)))] (when-not (= c 0) c))]
-  [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon "Height"])]
+  [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
   [:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
   ;[:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon "RemainingBlockEpoch"])]
   [:h6 "(You don't need to refresh the page.)"]

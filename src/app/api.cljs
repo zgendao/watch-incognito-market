@@ -67,7 +67,6 @@
             )
                    )
             )
-               (js/console.log (str info))
                )
               ))))
 
@@ -80,10 +79,9 @@
      
     (fn [result]
       (when-not (-> result .-data .-Error)
-        (let [blockchainInfo (-> result .-data .-Result)
-              info (js->clj blockchainInfo :keywordize-keys true)
+        (let [blockchainInfo (get-in (js->clj result :keywordize-keys true) [:data :Result])
+              info blockchainInfo 
               ]
-          (js/console.log result)
           (when blockchainInfo
             (swap! storage assoc
                    :validator info
@@ -164,7 +162,7 @@
      #js
      {:jsonrpc "2.0",
       :method "getpdestate",
-      :params #js [#js {:BeaconHeight (get-in @storage [:blockchain :Beacon "Height"])}],
+      :params #js [#js {:BeaconHeight (get-in @storage [:blockchain :Beacon :Height])}],
       :id (uuid/v4)})
     (fn [result]
       (when-not (-> result .-data .-Error)
