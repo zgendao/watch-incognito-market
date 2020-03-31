@@ -4,7 +4,10 @@
         :output-dir "public/js"
         :target :browser
         :compiler-options
-        {;:source-map true
+        {
+         :pseudo-names true
+         :pretty-print true
+         ;:source-map true
          ;:optimizations :none
          ;:fn-invoke-direct true
          }
