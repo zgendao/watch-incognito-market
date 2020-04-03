@@ -34,11 +34,13 @@
   "dependencies": {
     "axios": "^0.19.2",
     "create-react-class": "~15.6.3",
+    "isomorphic-ws": "^4.0.1",
     "lightweight-charts": "^2.0.0",
     "materialize-css": "^1.0.0-rc.2",
     "moment": "^2.24.0",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
-    "uuid": "^7.0.2"
+    "uuid": "^7.0.2",
+    "ws": "^7.2.3"
   }
 }

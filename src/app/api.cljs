@@ -90,7 +90,6 @@
                                    (:CandidateShardWaitingForNextRandom info)
                                    ))
               ]
-          (js/console.log (str waiting-list))
           (when blockchainInfo
             (swap! storage assoc
                    :validator info

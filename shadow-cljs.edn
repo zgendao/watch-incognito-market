@@ -25,6 +25,7 @@
         :target :node-test}}
  :dependencies [[reagent "0.8.1"]
                 [alandipert/storage-atom "2.0.1"]
+                [com.cognitect/transit-cljs "0.8.256"]
                 [devcards "0.2.6"]]
  :dev-http {3000 "public"}
  :nrepl {:port 3333}

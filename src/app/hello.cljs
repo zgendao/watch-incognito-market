@@ -8,7 +8,21 @@
     ["materialize-css" :as materialize]
     [cljs.pprint :as pprint]
     [alandipert.storage-atom :refer [local-storage]]
+    [cognitect.transit :as t]
     ))
+
+
+(def ws (new js/WebSocket (str "ws://localhost:8080/btc-usd")))
+
+(set!
+  (.-onmessage ws)
+  (fn [event]
+    (let [data (t/read (t/reader :json) (.-data event))]
+      
+      (js/console.log (str data))
+      
+      )))
+
 
 (defn exp [x n]
      (if (zero? n) 1
@@ -69,7 +83,7 @@ candlesChart
       #js {}
       options
       #js {:width (.-clientWidth candles)}
-      #js {:height 300}))
+      #js {:height 400}))
 
 candlestickSeries (.addCandlestickSeries candlesChart)
 
@@ -87,14 +101,14 @@ volumes1Chart
       #js {}
       options
       #js {:width (.-clientWidth volumes1)}
-      #js {:height 300}))
+      #js {:height 140}))
 
 volumes1Series (.addLineSeries volumes1Chart #js {:color "#b2bcc7"})
 
 _
 (.applyOptions
   volumes1Series
-  #js {:priceFormat #js {:precision 2, :minMove 0.01}})
+  #js {:priceFormat #js {:precision 0, :minMove 1}})
 
 volumes2 (.getElementById js/document "volumes2")
 
@@ -105,14 +119,14 @@ volumes2Chart
       #js {}
       options
       #js {:width (.-clientWidth volumes2)}
-      #js {:height 300}))
+      #js {:height 140}))
 
 volumes2Series (.addLineSeries volumes2Chart #js {:color "#b2bcc7"})
 
 _
 (.applyOptions
   volumes2Series
-  #js {:priceFormat #js {:precision 2, :minMove 0.01}})
+  #js {:priceFormat #js {:precision 0, :minMove 1}})
 
       ]
      
@@ -123,12 +137,29 @@ _
       (.setData candlestickSeries data)
       (.applyOptions
         candlesChart
-        #js
-         {:watermark
+        (js->clj
+         {
+		:layout {
+			:backgroundColor "#2B2B43"
+			:lineColor "#2B2B43"
+			:textColor "#D9D9D9"
+		}
+		:crosshair {
+			:color "#758696"
+		}
+		:grid {
+			:vertLines {
+				:color "#2B2B43"
+			}
+			:horzLines {
+				:color "#363C4E"
+			}
+		}
+          :watermark
             (js/Object.assign
-              #js {}
+              (clj->js {})
               watermarkDefault
-              #js {:text currentCurrency})}))
+              #js {:text currentCurrency})})))
 (let [data (clj->js PRV-STOCK)]
       (.setData volumes1Series data)
       (.applyOptions
@@ -157,11 +188,11 @@ _
      
      :reagent-render (fn []
  
-  [:div.container
-   [:div
+   [:div.container.z-depth-4
+    {:style {:border-radius "10px" :padding "10px" :background "white"}}
     [:div [:div#candles]]
     [:div [:div#volumes1]]
-    [:div [:div#volumes2]]]]
+    [:div [:div#volumes2]]]
                        
                        )}
     ) )
@@ -253,19 +284,7 @@ _
 
 
 (defn validators [memory storage]
-[:div
-  [:nav {:style {:text-align "center"}}
-   [:a "Live Incognito Market Data"]]
-  [:div.container
-   [:h2 "Welcome!"]
-   [:h6 "This site will be an advanced market analyzer for Incognito, but for now only two features are available: You could follow the detailed status of your nodes and you have a live counter about how many nodes are running."]
-  ;[:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
-  [:h5 "Reward Receiver Nodes: " (let [c (count (:RewardReceiver (:validator @storage)))] (when-not (= c 0) c))]
-  [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
-  [:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
-  ;[:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon "RemainingBlockEpoch"])]
-  [:h6 "(You don't need to refresh the page.)"]
-  [:br]]
+[:div.container
  ; [:div.container
  ;  (str (map (fn [[k c]]
  ;              [(name k) (count c)]) @storage))]
@@ -274,7 +293,47 @@ _
  ;  (str (map (fn [[k c]]
  ;              [(name k) (when (or (map? c) (vector? c)) (count c))]) (:validator @storage)))]
   
+  
+  ;[:div.container
+  ; [:h4 "DEX Shares"]
+  ; [:ul.collection
+  ;  (keep 
+  ;   (fn [[id volume]]
+  ;     (when-not (= 0 volume)
+  ;       [:li.collection-item.avatar
+  ;      [:img.circle {:src ""}]
+  ;      [:span (name id)]
+  ;      [:p "Volume: "volume]]
+  ;     ))
+  ;   (:PDEShares (:dex @storage)))
+  ;  ]]
+  ]
+  )
+
+
+(defn tabs []
+  (r/create-class
+    {
+     :component-did-mount 
+     (fn []
+       (materialize/Tabs.init (js/document.getElementById "tabs") #js {:swipeable true})
+       )
+     :reagent-render
+     (fn []
   [:div.container
+   [:ul#tabs.tabs.z-depth-1
+    [:li.tab.col.s3 [:a {:href "#test-swipe-1"} "My nodes"]]
+    [:li.tab.col.s3 [:a {:href "#test-swipe-2"} "Market data"]]
+    ]
+   [:div#test-swipe-1.col.s12
+   {:style
+    {
+                 :height "800px"
+     
+     }
+    } 
+  [:div {:style {:padding-top "30px"
+                 }}
    [:div.input-field
     [:input.validate {:type "text" :id "add"}]
     [:label.active {:for "add"} "Paste your public key here:"]
@@ -289,9 +348,7 @@ _
                       (materialize/toast (clj->js {:html "Wait a sec.."})))
                     ))}
     "Watch my node"]
-   (if (when (:nodes @memory) (not (empty? (:nodes @memory))))
-     [:h4 "My nodes"]
-     [:h4 "Validators"])
+   (when (and (:nodes @memory) (not (empty? (:nodes @memory))))
           [:ul.collection
            (keep
             (fn [[public-id info]]
@@ -315,33 +372,84 @@ _
                                         )} "Unfollow"])
                ]))
             (get-in @storage [:validators]))]
-   
+  ) 
           
    (when (when (:nodes @memory) (not (empty? (:nodes @memory))))
      [:h6 "This list is saved into your browser."]
      )
           ]
-  
-  ;[:div.container
-  ; [:h4 "DEX Shares"]
-  ; [:ul.collection
-  ;  (keep 
-  ;   (fn [[id volume]]
-  ;     (when-not (= 0 volume)
-  ;       [:li.collection-item.avatar
-  ;      [:img.circle {:src ""}]
-  ;      [:span (name id)]
-  ;      [:p "Volume: "volume]]
-  ;     ))
-  ;   (:PDEShares (:dex @storage)))
-  ;  ]]
+    
+    ]
+   [:div#test-swipe-2.col.s12
+    
+  [:div
+  [:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
+  [:h5 "Reward Receiver Nodes: " (let [c (count (:RewardReceiver (:validator @storage)))] (when-not (= c 0) c))]
+  [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
+  [:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
+  ;[:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon "RemainingBlockEpoch"])]
   ]
+    
+    ]]
+  )}))
+
+(defn landing []
+  [:div
+   [:nav
+    [:div.nav-wrapper
+    [:a.brand-logo "Incognito Market"]
+     [:ul.right.hide-on-med-and-down
+    [:li
+     [:a
+      {:href "sass.html"}
+      [:i.material-icons.left "search"]
+      "Link with Left Icon"]]
+    [:li
+     [:a
+      {:href "badges.html"}
+      [:i.material-icons.right "view_module"]
+      "Link with Right Icon"]]]
+    ]]
+   ]
   )
 
 (defn hello []
   [:<>
-[validators memory storage]
-;   [statistics]
+   
+   [:div.banner
+    {:style 
+     {:opacity 0.2
+      :margin-bottom "500px"
+      :background "url(city.jpeg)"
+      :background-size "cover" :background-position "bottom"
+      :height "800px" :width "100%"
+      :position "relative"}}
+    [:div {:style {:width "100%" :height "100%" :position "absolute" :top 0 :left 0
+                   :background-color "rgba(0,0,0,0.4)"}}]
+    ]
+    [:div {:style {:position "absolute" :top "50%" :width "100%"}}
+     [statistics]
+     [:center "(Charts are not udpated, this is only a demo in progress.)"]]
+    [validators memory storage]
+   [tabs]
+[:footer.page-footer
+  [:div.container
+   [:div.row
+    [:div.col.l6.s12
+     [:h5.white-text "Incognito Market"]
+     [:p.grey-text.text-lighten-4
+      "Footer content."]]
+    [:div.col.l4.offset-l2.s12
+     [:h5.white-text "Links"]
+     [:ul
+      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 1"]]
+      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 2"]]
+      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 3"]]
+      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 4"]]]]]]
+  [:div.footer-copyright
+   [:div.container
+    "\n            © 2020 All privacy reserved.\n            "
+    [:a.grey-text.text-lighten-4.right {:href "#!"} "More Links"]]]]
 ])
 
 
