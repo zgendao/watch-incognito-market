@@ -348,7 +348,6 @@ _
                       (materialize/toast (clj->js {:html "Wait a sec.."})))
                     ))}
     "Watch my node"]
-   (when (and (:nodes @memory) (not (empty? (:nodes @memory))))
           [:ul.collection
            (keep
             (fn [[public-id info]]
@@ -372,11 +371,7 @@ _
                                         )} "Unfollow"])
                ]))
             (get-in @storage [:validators]))]
-  ) 
           
-   (when (when (:nodes @memory) (not (empty? (:nodes @memory))))
-     [:h6 "This list is saved into your browser."]
-     )
           ]
     
     ]
