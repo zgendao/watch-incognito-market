@@ -12,16 +12,16 @@
     ))
 
 
-(def ws (new js/WebSocket (str "ws://localhost:8080/btc-usd")))
+;(def ws (new js/WebSocket (str "ws://localhost:8080/btc-usd")))
 
-(set!
-  (.-onmessage ws)
-  (fn [event]
-    (let [data (t/read (t/reader :json) (.-data event))]
-      
-      (js/console.log (str data))
-      
-      )))
+;(set!
+;  (.-onmessage ws)
+;  (fn [event]
+;    (let [data (t/read (t/reader :json) (.-data event))]
+;      
+;      (js/console.log (str data))
+;      
+;      )))
 
 
 (defn exp [x n]
@@ -34,7 +34,7 @@
 
 (defn common-refreshData []
   (api/blockchainInfo storage)
-  ;(when (get-in @storage [:blockchain :Beacon "Height"]) (api/dexInfo storage))
+  (when (get-in @storage [:blockchain :Beacon :Height]) (api/dexInfo storage))
   (js/setTimeout common-refreshData (* 5 1000)))
 
 (defn refreshData []
@@ -250,7 +250,7 @@ _
              token1Info (get (:tokens @storage) token1ID)
              amount1 
              (if token1Info
-               (pprint/cl-format nil "~,6f"
+               (pprint/cl-format nil "~,3f"
                  (/ (:Token1PoolValue pair)
                 (float (exp
                  10
@@ -261,7 +261,7 @@ _
              token2Info (get (:tokens @storage) token2ID)
              amount2 
              (if token2Info
-               (pprint/cl-format nil "~,6f"
+               (pprint/cl-format nil "~,3f"
                  (/ (:Token2PoolValue pair)
                 (float (exp
                  10
@@ -285,54 +285,81 @@ _
 
 (defn validators [memory storage]
 [:div.container
- ; [:div.container
- ;  (str (map (fn [[k c]]
- ;              [(name k) (count c)]) @storage))]
+  [:div.container
+   (str (map (fn [[k c]]
+               [(name k) (count c)]) @storage))]
   
  ; [:div.container
  ;  (str (map (fn [[k c]]
  ;              [(name k) (when (or (map? c) (vector? c)) (count c))]) (:validator @storage)))]
   
   
-  ;[:div.container
-  ; [:h4 "DEX Shares"]
-  ; [:ul.collection
-  ;  (keep 
-  ;   (fn [[id volume]]
-  ;     (when-not (= 0 volume)
-  ;       [:li.collection-item.avatar
-  ;      [:img.circle {:src ""}]
-  ;      [:span (name id)]
-  ;      [:p "Volume: "volume]]
-  ;     ))
-  ;   (:PDEShares (:dex @storage)))
-  ;  ]]
   ]
   )
 
 
-(defn tabs []
-  (r/create-class
-    {
-     :component-did-mount 
-     (fn []
-       (materialize/Tabs.init (js/document.getElementById "tabs") #js {:swipeable true})
-       )
-     :reagent-render
-     (fn []
-  [:div.container
-   [:ul#tabs.tabs.z-depth-1
-    [:li.tab.col.s3 [:a {:href "#test-swipe-1"} "My nodes"]]
-    [:li.tab.col.s3 [:a {:href "#test-swipe-2"} "Market data"]]
+
+(defn landing []
+  [:div
+   [:nav
+    [:div.nav-wrapper
+    [:a.center.brand-logo "Incognito Market"]
+     [:ul.right.hide-on-med-and-down
+    ;[:li
+    ; [:a
+    ;  {:href "sass.html"}
+    ;  [:i.material-icons.left "search"]
+    ;  "Link with Left Icon"]]
+    ;[:li
+    ; [:a
+    ;  {:href "badges.html"}
+    ;  [:i.material-icons.right "view_module"]
+    ;  "Link with Right Icon"]]
     ]
-   [:div#test-swipe-1.col.s12
-   {:style
-    {
-                 :height "800px"
-     
-     }
-    } 
-  [:div {:style {:padding-top "30px"
+    ]]
+   ]
+  )
+
+(defn footer []
+  
+    [:footer.page-footer
+  [:div.container
+   [:div.row
+    [:div.col.l6.s12
+     [:h5.white-text "Incognito Market"]
+     [:p.grey-text.text-lighten-4
+      "Footer content."]]
+    [:div.col.l4.offset-l2.s12
+     [:h5.white-text "Links"]
+     [:ul
+      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 1"]]
+      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 2"]]
+      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 3"]]
+      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 4"]]]]]]
+  [:div.footer-copyright
+   [:div.container
+    "\n            © 2020 All privacy reserved.\n            "
+    [:a.grey-text.text-lighten-4.right {:href "#!"} "More Links"]]]]
+  )
+
+(defn hello []
+  [:<>
+   
+    ;[:div 
+     ;[statistics]
+    ; [:center "(Charts are not udpated, this is only a demo in progress.)"]]
+    
+
+[landing]    
+  [:div.container
+  [:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
+  [:h5 "Reward Receiver Nodes: " (let [c (count (:RewardReceiver (:validator @storage)))] (when-not (= c 0) c))]
+  [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
+  [:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
+  [:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon :RemainingBlockEpoch])]
+  ]
+    
+  [:div.container {:style {:padding-top "30px"
                  }}
    [:div.input-field
     [:input.validate {:type "text" :id "add"}]
@@ -348,7 +375,7 @@ _
                       (materialize/toast (clj->js {:html "Wait a sec.."})))
                     ))}
     "Watch my node"]
-          [:ul.collection
+          [:ul.collection {:style {:height "600px" :overflow "auto"}}
            (keep
             (fn [[public-id info]]
               (when
@@ -374,77 +401,24 @@ _
           
           ]
     
-    ]
-   [:div#test-swipe-2.col.s12
-    
-  [:div
-  [:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
-  [:h5 "Reward Receiver Nodes: " (let [c (count (:RewardReceiver (:validator @storage)))] (when-not (= c 0) c))]
-  [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
-  [:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
-  ;[:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon "RemainingBlockEpoch"])]
-  ]
-    
-    ]]
-  )}))
+   ; [validators memory storage]
 
-(defn landing []
-  [:div
-   [:nav
-    [:div.nav-wrapper
-    [:a.brand-logo "Incognito Market"]
-     [:ul.right.hide-on-med-and-down
-    [:li
-     [:a
-      {:href "sass.html"}
-      [:i.material-icons.left "search"]
-      "Link with Left Icon"]]
-    [:li
-     [:a
-      {:href "badges.html"}
-      [:i.material-icons.right "view_module"]
-      "Link with Right Icon"]]]
-    ]]
-   ]
-  )
-
-(defn hello []
-  [:<>
-   
-   [:div.banner
-    {:style 
-     {:opacity 0.2
-      :margin-bottom "500px"
-      :background "url(city.jpeg)"
-      :background-size "cover" :background-position "bottom"
-      :height "800px" :width "100%"
-      :position "relative"}}
-    [:div {:style {:width "100%" :height "100%" :position "absolute" :top 0 :left 0
-                   :background-color "rgba(0,0,0,0.4)"}}]
-    ]
-    [:div {:style {:position "absolute" :top "50%" :width "100%"}}
-     [statistics]
-     [:center "(Charts are not udpated, this is only a demo in progress.)"]]
-    [validators memory storage]
-   [tabs]
-[:footer.page-footer
-  [:div.container
-   [:div.row
-    [:div.col.l6.s12
-     [:h5.white-text "Incognito Market"]
-     [:p.grey-text.text-lighten-4
-      "Footer content."]]
-    [:div.col.l4.offset-l2.s12
-     [:h5.white-text "Links"]
-     [:ul
-      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 1"]]
-      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 2"]]
-      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 3"]]
-      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 4"]]]]]]
-  [:div.footer-copyright
-   [:div.container
-    "\n            © 2020 All privacy reserved.\n            "
-    [:a.grey-text.text-lighten-4.right {:href "#!"} "More Links"]]]]
+  ;  [dex]
+    
+  ;[:div.container
+  ; [:h4 "DEX Shares"]
+  ; [:ul.collection
+  ;  (keep 
+  ;   (fn [[id volume]]
+  ;     (when-not (= 0 volume)
+  ;       [:li.collection-item.avatar
+  ;      [:img.circle {:src ""}]
+  ;      [:span (name id)]
+  ;      [:p "Volume: "volume]]
+  ;     ))
+  ;   (:PDEShares (:dex @storage)))
+  ;  ]]
+    
 ])
 
 
