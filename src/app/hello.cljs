@@ -343,6 +343,10 @@ _
   )
 
 (defn hello []
+  (let [
+        active? (when (:nodes @memory) (not (empty? (:nodes @memory))))
+        noden (count (:RewardReceiver (:validator @storage)))
+        ]
   [:<>
    
     ;[:div 
@@ -353,7 +357,7 @@ _
 [landing]    
   [:div.container
   [:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
-  [:h5 "Reward Receiver Nodes: " (let [c (count (:RewardReceiver (:validator @storage)))] (when-not (= c 0) c))]
+  [:h5 "Reward Receiver Nodes: " (when-not (= noden 0) noden)]
   [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
   [:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
   [:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon :RemainingBlockEpoch])]
@@ -363,27 +367,51 @@ _
                  }}
    [:div.input-field
     [:input.validate {:type "text" :id "add"}]
-    [:label.active {:for "add"} "Paste your public key here:"]
-    ]
+    [:label.active {:for "add"} "Paste your public key here:"]]
+   [:div.input-field
+    [:input.validate {:type "text" :id "nodename"}]
+    [:label.active {:for "nodename"} "Name your node:"]]
    [:button.waves-effect.waves-light.btn
     {:on-click #(let 
-                  [v (.-value (js/document.getElementById "add"))]
+                  [
+                   v (.-value (js/document.getElementById "add"))
+                   n (.-value (js/document.getElementById "nodename"))
+                   ]
                   (if (get-in @storage [:validators v])
                     (do
-                      (swap! memory assoc-in [:nodes v] true)
+                      (swap! memory assoc-in [:nodes v] 
+                             {
+                              :name n
+                              })
                       (set! (.-value (js/document.getElementById "add")) "")
+                      (set! (.-value (js/document.getElementById "nodename")) "")
                       (materialize/toast (clj->js {:html "Wait a sec.."})))
+                    (materialize/toast (clj->js {:html "Node cannot be found."}))
                     ))}
     "Watch my node"]
+
+   (if active?
+     (when (and (:nodes @memory) (not= 0 noden)) 
+       [:p
+      "You have " (count (:nodes @memory))" node"(when (< 1 (count (:nodes @memory))) "s")
+      " and "
+      (pprint/cl-format nil "~,3f" (* (/ (count (:nodes @memory)) noden) 100))
+      "% network share."
+      ])
+     )
+
           [:ul.collection {:style {:height "600px" :overflow "auto"}}
            (keep
             (fn [[public-id info]]
               (when
-                (if (when (:nodes @memory) (not (empty? (:nodes @memory))))
+                (if active? 
                   ((set (keys (:nodes @memory))) public-id)
                   true)
+                (let [
+                      validator (get-in @memory [:nodes public-id])
+                      ]
                 [:li.collection-item
-               [:b (str public-id)]
+               (when (and validator (not (boolean? validator))) [:p [:h3 (:name validator)] [:b (str public-id)]])
                " "
                [:p 
                 (when (:waiting? info) [:span "Waiting to be selected. "])
@@ -396,7 +424,7 @@ _
                                         (swap! memory update :nodes dissoc public-id)
                                         (materialize/toast (clj->js {:html "Unfollowing.."}))
                                         )} "Unfollow"])
-               ]))
+               ])))
             (get-in @storage [:validators]))]
           
           ]
@@ -419,6 +447,6 @@ _
   ;   (:PDEShares (:dex @storage)))
   ;  ]]
     
-])
+]))
 
 
