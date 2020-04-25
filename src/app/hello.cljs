@@ -361,6 +361,18 @@ _
   [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
   [:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
   [:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon :RemainingBlockEpoch])]
+  
+   (if active?
+     (when (and (:nodes @memory) (not= 0 noden)) 
+       [:h5
+      "You have " [:b (count (:nodes @memory))" node"(when (< 1 (count (:nodes @memory))) "s")]
+      " worth "[:b (* (count (:nodes @memory)) 1750) " PRV"]
+      "or "[:b (pprint/cl-format nil "~,1f" (* (count (:nodes @memory)) 1750 0.547)) " USDT"]
+      " and "
+      [:b (pprint/cl-format nil "~,3f" (* (/ (count (:nodes @memory)) noden) 100))
+      "%"]" network share."
+      ])
+     )
   ]
     
   [:div.container {:style {:padding-top "30px"
@@ -390,15 +402,6 @@ _
                     ))}
     "Watch my node"]
 
-   (if active?
-     (when (and (:nodes @memory) (not= 0 noden)) 
-       [:p
-      "You have " (count (:nodes @memory))" node"(when (< 1 (count (:nodes @memory))) "s")
-      " and "
-      (pprint/cl-format nil "~,3f" (* (/ (count (:nodes @memory)) noden) 100))
-      "% network share."
-      ])
-     )
 
           [:ul.collection {:style {:height "600px" :overflow "auto"}}
            (keep
