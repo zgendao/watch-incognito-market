@@ -327,19 +327,23 @@ _
    [:div.row
     [:div.col.l6.s12
      [:h5.white-text "Incognito Market"]
+     [:p.white-text
+      "Advanced tools for Incognito investors."
+      ]
      [:p.grey-text.text-lighten-4
-      "Footer content."]]
+      "You could support my work sending PRV:"]
+     [:input {:value "12RqosnamJWWjW25po5w7wQEzbnM7EjYF6bPFnTkZmC34wx7FuCZrD9RYtBQXzDd6Tpw6bkJFFiDXJQitpxA9yP7zeQMAvepLy5Qc2W"}]]
     [:div.col.l4.offset-l2.s12
      [:h5.white-text "Links"]
      [:ul
-      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 1"]]
-      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 2"]]
-      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 3"]]
-      [:li [:a.grey-text.text-lighten-3 {:href "#!"} "Link 4"]]]]]]
+      [:li [:a.grey-text.text-lighten-3 {:target "_blank" :href "https://pdex.incognito.best/"} "inccry's charts"]]
+      [:li [:a.grey-text.text-lighten-3 {:target "_blank" :href "https://incognito.mesquka.com/"} "mesquka's ecosystem tools"]]
+      ]]
+    ]]
   [:div.footer-copyright
    [:div.container
     "\n            © 2020 All privacy reserved.\n            "
-    [:a.grey-text.text-lighten-4.right {:href "#!"} "More Links"]]]]
+    [:a.grey-text.text-lighten-4.right {:target "_blank" :href "https://incognito.org/u/raz/summary"} "Made by raz"]]]]
   )
 
 (defn hello []
@@ -432,7 +436,7 @@ _
             (get-in @storage [:validators]))]
           
           ]
-    
+   [footer] 
    ; [validators memory storage]
 
   ;  [dex]
