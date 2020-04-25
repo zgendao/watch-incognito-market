@@ -367,7 +367,7 @@ _
        [:h5
       "You have " [:b (count (:nodes @memory))" node"(when (< 1 (count (:nodes @memory))) "s")]
       " worth "[:b (* (count (:nodes @memory)) 1750) " PRV"]
-      "or "[:b (pprint/cl-format nil "~,1f" (* (count (:nodes @memory)) 1750 0.547)) " USDT"]
+      " or "[:b (pprint/cl-format nil "~,1f" (* (count (:nodes @memory)) 1750 0.547)) " USDT"]
       " and "
       [:b (pprint/cl-format nil "~,3f" (* (/ (count (:nodes @memory)) noden) 100))
       "%"]" network share."
