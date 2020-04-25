@@ -411,8 +411,9 @@ _
                       validator (get-in @memory [:nodes public-id])
                       ]
                 [:li.collection-item
-               (when (and validator (not (boolean? validator))) [:p [:h3 (:name validator)] [:b (str public-id)]])
-               " "
+               [:p
+                (when (and validator (not (boolean? validator))) [:h3 (:name validator)]) 
+                [:b (str public-id)]]
                [:p 
                 (when (:waiting? info) [:span "Waiting to be selected. "])
                 (when (:shard info) [:span "In shard number "(:shard info)". "])
