@@ -350,7 +350,30 @@ _
   (let [
         active? (when (:nodes @memory) (not (empty? (:nodes @memory))))
         noden (count (:RewardReceiver (:validator @storage)))
-        ]
+        
+        shown-validators
+           (keep
+            (fn [[public-id info]]
+              (when
+                (if active? 
+                  ((set (keys (:nodes @memory))) public-id)
+                  true)
+                (let [
+                      validator (when active? (get-in @memory [:nodes public-id]))
+                      ]
+                [public-id info 
+                 validator
+                 (when (and validator (not (boolean? validator))) (:name validator))
+                 ])
+                ))
+            (get-in @storage [:validators]))
+        
+           shown-validators
+           (if active?
+             (sort-by last shown-validators)
+             shown-validators
+             )
+           ]
   [:<>
    
     ;[:div 
@@ -363,7 +386,7 @@ _
   [:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
   [:h5 "Reward Receiver Nodes: " (when-not (= noden 0) noden)]
   [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
-  [:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
+  ;[:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
   [:h5 "Remaining block epoch: " (get-in @storage [:blockchain :Beacon :RemainingBlockEpoch])]
   
    (if active?
@@ -381,9 +404,14 @@ _
     
   [:div.container {:style {:padding-top "30px"
                  }}
+   ;[:h4 "Add / edit node"]
+   [:br]
    [:div.input-field
     [:input.validate {:type "text" :id "add"}]
     [:label.active {:for "add"} "Paste your public key here:"]]
+   ;[:div.input-field
+   ; [:input.validate {:type "text" :id "readonly"}]
+   ; [:label.active {:for "readonly"} "Paste your read-only key here:"]]
    [:div.input-field
     [:input.validate {:type "text" :id "nodename"}]
     [:label.active {:for "nodename"} "Name your node:"]]
@@ -392,48 +420,61 @@ _
                   [
                    v (.-value (js/document.getElementById "add"))
                    n (.-value (js/document.getElementById "nodename"))
+                   ;r (.-value (js/document.getElementById "readonly"))
                    ]
                   (if (get-in @storage [:validators v])
                     (do
                       (swap! memory assoc-in [:nodes v] 
                              {
                               :name n
+                              ;:read-only r
                               })
                       (set! (.-value (js/document.getElementById "add")) "")
                       (set! (.-value (js/document.getElementById "nodename")) "")
+                      ;(set! (.-value (js/document.getElementById "readonly")) "")
                       (materialize/toast (clj->js {:html "Wait a sec.."})))
                     (materialize/toast (clj->js {:html "Node cannot be found."}))
                     ))}
     "Watch my node"]
 
 
-          [:ul.collection {:style {:height "600px" :overflow "auto"}}
-           (keep
-            (fn [[public-id info]]
-              (when
-                (if active? 
-                  ((set (keys (:nodes @memory))) public-id)
-                  true)
-                (let [
-                      validator (get-in @memory [:nodes public-id])
-                      ]
-                [:li.collection-item
+          [:ul.collection (when-not active? {:style {:height "600px" :overflow "auto"}})
+            
+           (map
+             (fn [[public-id info validator validator-name]]
+               [:li
+                {:class (str "collection-item "
+                             (cond
+                               (:committee? info) "green accent-2"
+                               (:pending? info) "lime accent-2"
+                               ))}
                [:p
-                (when (and validator (not (boolean? validator))) [:h3 (:name validator)]) 
-                [:b (str public-id)]]
-               [:p 
+                 (when (and validator (not (boolean? validator)))
+                   [:h3 {:style {:margin-top 0}} validator-name])]
+               [:h6 {:style {:font-weight "800"}}
                 (when (:waiting? info) [:span "Waiting to be selected. "])
                 (when (:shard info) [:span "In shard number "(:shard info)". "])
                 (when (:committee? info) [:span "Currently in committee. "])
                 (when (:pending? info) [:span "Pending.."])
                 ]
+               [:br]
+               [:div.input-field
+                [:input.validate {:type "text" :id public-id :value public-id}]
+                [:label.active {:for public-id} "Public key:"]]
+               (when (:read-only validator)
+               [:div.input-field
+                [:input.validate {:type "text" :id (:read-only validator) :value (:read-only validator)}]
+                [:label.active {:for (:read-only validator)} "Read-only key:"]])
                (when (get (:nodes @memory) public-id)
                  [:button {:on-click #(do
                                         (swap! memory update :nodes dissoc public-id)
                                         (materialize/toast (clj->js {:html "Unfollowing.."}))
                                         )} "Unfollow"])
-               ])))
-            (get-in @storage [:validators]))]
+               ]
+               )
+             shown-validators
+             )
+           ]
           
           ]
    [footer] 
