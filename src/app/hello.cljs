@@ -9,24 +9,24 @@
     [cljs.pprint :as pprint]
     [alandipert.storage-atom :refer [local-storage]]
     [cognitect.transit :as t]
+    ["incognito-js" :as incognito-js]
+    ["papp-sdk" :as papp]
+    ["qrcode" :as qrcode]
+    [async-await.core :refer [async await]]
     ))
-
-
-;(def ws (new js/WebSocket (str "ws://localhost:8080/btc-usd")))
-
-;(set!
-;  (.-onmessage ws)
-;  (fn [event]
-;    (let [data (t/read (t/reader :json) (.-data event))]
-;      
-;      (js/console.log (str data))
-;      
-;      )))
-
 
 (defn exp [x n]
      (if (zero? n) 1
          (* x (exp x (dec n)))))
+
+(def state (r/atom {}))
+
+(async
+  (let []
+    (await (incognito-js/goServices.implementGoMethodUseWasm))
+    (swap! state assoc :wasm-ready? true)))
+
+(def ^:export wallet (incognito-js/WalletInstance.))
 
 (def memory (local-storage (atom {}) :prefs))
 
@@ -320,8 +320,21 @@ _
    ]
   )
 
+
+(defn qr-code [text]
+  (r/create-class
+    {
+     :component-did-mount 
+     (fn [element]
+           (qrcode/toCanvas 
+             (r/dom-node element)
+             text))
+     :reagent-render (fn []
+   [:canvas#canvas]
+  )}))
+
+
 (defn footer []
-  
     [:footer.page-footer
   [:div.container
    [:div.row
@@ -332,6 +345,9 @@ _
       ]
      [:p.grey-text.text-lighten-4
       "You could support my work sending PRV:"]
+     [qr-code
+      "12RqosnamJWWjW25po5w7wQEzbnM7EjYF6bPFnTkZmC34wx7FuCZrD9RYtBQXzDd6Tpw6bkJFFiDXJQitpxA9yP7zeQMAvepLy5Qc2W"
+      ]
      [:input {:value "12RqosnamJWWjW25po5w7wQEzbnM7EjYF6bPFnTkZmC34wx7FuCZrD9RYtBQXzDd6Tpw6bkJFFiDXJQitpxA9yP7zeQMAvepLy5Qc2W"}]]
     [:div.col.l4.offset-l2.s12
      [:h5.white-text "Links"]
@@ -344,7 +360,67 @@ _
    [:div.container
     "\n            © 2020 All privacy reserved.\n            "
     [:a.grey-text.text-lighten-4.right {:target "_blank" :href "https://incognito.org/u/raz/summary"} "Made by raz"]]]]
-  )
+ )
+
+
+
+(defn wallet-ui []
+  (r/create-class
+    {
+     :component-did-mount 
+     (fn []
+       (.then
+         (.init wallet "my-passphrase" "TEST-WALLET")
+         (fn [] 
+           (swap! state assoc :accounts (.getAccounts (.-masterAccount wallet))))))
+     
+     :reagent-render (fn []
+
+  (let [
+        account (first (js->clj (:accounts @state)))
+        ]
+    [:div {:style {:display "flex" :justify-content "center" :align-items "center" :flex-direction "column"
+                 :padding-bottom "60px" :padding-top "30px"}}
+   
+     [:h3 "Your Web Wallet:"]
+     
+     [:div
+        (when account [:h6 "Name: "(-> account .-name)])
+   [:p [:b "Try sending 0.01 RPV to your new address:"]]
+   [:p {:style {:font-size "12px"}} "(Hint: you may have to increase backlight on your laptop to make it work)"]
+      (when account  [qr-code
+    (-> account .-key .-keySet .-paymentAddressKeySerialized)
+    ])
+        (when account
+     [:div.input-field
+    [:input.validate {:type "text" :id "payment" :value (-> account .-key .-keySet .-paymentAddressKeySerialized)}]
+    [:label.active {:for "payment"} "Payment address:"]])
+   [:p [:b "Import it to your mobile wallet with this QR code:"]]
+   (when account
+     [qr-code
+    (-> account .-key .-keySet .-privateKeySerialized)
+    ])
+   (when account
+     [:div.input-field
+    [:input.validate {:type "text" :id "private" :value (-> account .-key .-keySet .-privateKeySerialized)}]
+    [:label.active {:for "private"} "Private key:"]])
+   (when account
+     [:div.input-field
+    [:input.validate {:type "text" :id "validator" :value (-> account .-nativeToken .-accountKeySet .-validatorKey)}]
+    [:label.active {:for "validator"} "Validator key:"]])
+        ;[:div "Others: "
+        ; (map
+        ;   (fn [id]
+        ;     [:p id])
+        ;   (js->clj (-> account .-privacyTokenIds))
+        ;   )
+        ; ]
+        [:h6 [:b "Warning! The website doesn't store this generated wallet yet."]]
+        [:h6 "Try reloading the page and it will generate a new one."]
+        [:h6 "This is only a test, but you could already create a paper wallet with it, without touching your mobile. Just print this page!"]
+        ]
+   ]))}))
+
 
 (defn hello []
   (let [
@@ -395,7 +471,16 @@ _
 
 [landing]    
   [:div.container
-  [:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
+  
+      
+   (if 
+     (:wasm-ready? @state)
+     [wallet-ui]
+     "loading webassembly.."
+     )
+   
+     [:h3.center "Node Watcher:"]
+   [:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
   [:h5 "Reward Receiver Nodes: " (when-not (= noden 0) noden)]
   [:h5 "Current blockchain height: " (get-in @storage [:blockchain :Beacon :Height])]
   ;[:h5 "Current transaction number: " (get-in @storage [:blockchain :TotalTxs])]
@@ -525,5 +610,4 @@ _
   ;  ]]
     
 ]))
-
 
