@@ -373,6 +373,18 @@ _
              (sort-by last shown-validators)
              shown-validators
              )
+           earning
+           (when active?
+           (keep (fn [[_ info _ n]]
+                   (when
+                     (:committee? info) n)
+                   ) shown-validators))
+           pending
+           (when active?
+           (keep (fn [[_ info _ n]]
+                   (when
+                     (:pending? info) n)
+                   ) shown-validators))
            ]
   [:<>
    
@@ -400,7 +412,23 @@ _
       "%"]" network share."
       ])
      )
-  ]
+  (when active?
+    [:h5
+     "Currently "
+     (if (empty? earning) "no one" [:b (map #(str % " ") earning)])
+     " "
+     (if (< 1 (count earning)) "are" "is")
+     " earning"
+     (if (empty? pending)
+       "."
+     [:span
+      ", "(if (empty? earning) "but" "and")" "
+     [:b (map #(str % " ") pending)]
+     " "
+     (if (< 1 (count pending)) "are" "is")
+     " pending."])
+     ])
+   ]
     
   [:div.container {:style {:padding-top "30px"
                  }}
