@@ -472,13 +472,7 @@ _
 [landing]    
   [:div.container
   
-      
-   (if 
-     (:wasm-ready? @state)
-     [wallet-ui]
-     "loading webassembly.."
-     )
-   
+     
      [:h3.center "Node Watcher:"]
    [:h5 "Active shards: " (get-in @storage [:blockchain :ActiveShards])]
   [:h5 "Reward Receiver Nodes: " (when-not (= noden 0) noden)]
@@ -497,12 +491,12 @@ _
       "%"]" network share."
       ])
      )
-  (when active?
+  (when (and active? (not (and (empty? earning) (empty? pending))))
     [:h5
      "Currently "
-     (if (empty? earning) "no one" [:b (map #(str % " ") earning)])
+     (if (empty? earning) "your validators" [:b (map #(str % " ") earning)])
      " "
-     (if (< 1 (count earning)) "are" "is")
+     (cond (< 1 (count earning)) "are" (empty? earning) "are not" :else "is")
      " earning"
      (if (empty? pending)
        "."
@@ -590,7 +584,14 @@ _
            ]
           
           ]
-   [footer] 
+   
+
+   (if 
+     (:wasm-ready? @state)
+     [wallet-ui]
+     "loading webassembly.."
+     )
+[footer] 
    ; [validators memory storage]
 
   ;  [dex]
