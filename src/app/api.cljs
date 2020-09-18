@@ -12,7 +12,7 @@
     (when (some identity vs)
       (reduce #(rec-merge %1 %2) v vs))))
 
-(def INCOGNITO_NODE "https://fullnode.incognito.org")
+(def INCOGNITO_NODE "https://fullnode.incognito.best")
 
 (def INCOGNITO_API "https://api.incognito.org")
 
@@ -80,7 +80,10 @@
     (fn [result]
       (when-not (-> result .-data .-Error)
         (let [blockchainInfo (get-in (js->clj result :keywordize-keys true) [:data :Result])
+
               info blockchainInfo 
+              _ (doseq [[ez meh] info] (println ez (str meh)))
+              
               waiting-list
 
                                  (into (hash-map)

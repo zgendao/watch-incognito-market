@@ -425,7 +425,7 @@ _
 (defn hello []
   (let [
         active? (when (:nodes @memory) (not (empty? (:nodes @memory))))
-        noden (count (:RewardReceiver (:validator @storage)))
+        noden (count (:AutoStaking (:validator @storage)))
         
         shown-validators
            (keep
