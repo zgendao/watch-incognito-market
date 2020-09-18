@@ -94,7 +94,6 @@
         (let [blockchainInfo (get-in (js->clj result :keywordize-keys true) [:data :Result])
 
               info blockchainInfo 
-              _ (doseq [[ez meh] info] (println ez (str meh)))
               
               waiting-list
 
