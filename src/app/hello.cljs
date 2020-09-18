@@ -41,6 +41,8 @@
   (api/validatorInfo storage)
   (js/setTimeout refreshData (* 60 1000)))
 
+(api/price-request storage)
+
 (api/tokenList storage)
 
 (defonce common-refresher (common-refreshData))
@@ -485,7 +487,7 @@ _
        [:h5
       "You have " [:b (count (:nodes @memory))" node"(when (< 1 (count (:nodes @memory))) "s")]
       " worth "[:b (* (count (:nodes @memory)) 1750) " PRV"]
-      " or "[:b (pprint/cl-format nil "~,1f" (* (count (:nodes @memory)) 1750 0.665)) " USDT"]
+      " or "[:b (pprint/cl-format nil "~,1f" (* (count (:nodes @memory)) 1750 (:prv-price @storage))) " USDT"]
       " and "
       [:b (pprint/cl-format nil "~,3f" (* (/ (count (:nodes @memory)) noden) 100))
       "%"]" network share."

@@ -1,5 +1,9 @@
 (ns app.api
+    (:require-macros [cljs.core.async.macros :refer [go]])
+
   (:require
+    [cljs.core.async :refer [<!]]    
+    [cljs-http.client :as http]
     ["axios" :as axios]
     ["uuid" :as uuid]
     ))
@@ -19,6 +23,14 @@
 (def INCOGNITO_ANALYTIC_API "https://analytic-api.incognito.org")
 
 (def PROXY_PREFIX "https://cors-proxy-mesquka.herokuapp.com/")
+
+
+(defn price-request
+  [storage]
+  (go (let [response (<! (http/get "https://api.incognito.org/ptoken/list" {:with-credentials? false :headers {"Content-Type" "application/json"}}))
+            last-trade (first (:Result (:body response)))
+            price (/ (:PriceUsd last-trade) (:PricePrv last-trade))]
+        (swap! storage assoc :prv-price price))))
 
 (defn tokenList
   [storage]
