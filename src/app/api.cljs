@@ -12,7 +12,7 @@
     (when (some identity vs)
       (reduce #(rec-merge %1 %2) v vs))))
 
-(def INCOGNITO_NODE "https://mainnet.incognito.org/fullnode")
+(def INCOGNITO_NODE "https://fullnode.incognito.org")
 
 (def INCOGNITO_API "https://api.incognito.org")
 
